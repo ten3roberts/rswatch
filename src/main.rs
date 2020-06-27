@@ -23,6 +23,13 @@ fn main() {
             false,
             args::OptionPolicy::FinalizeIgnore(),
         ),
+        args::OptionSpec::new(
+            'i',
+            "interval",
+            "Time in milliseconds between checks (default 100)",
+            false,
+            args::OptionPolicy::Exact(1),
+        ),
     ];
     let config = match args::Config::new_env(&specs) {
         Ok(config) => config,
@@ -34,7 +41,7 @@ fn main() {
 
     if let Some(_) = config.option("help") {
         println!(
-            "rswatch - watch files for changes and execute commands\n{}",
+            "rswatch - watch files for changes and execute commands\n\n{}",
             args::Config::generate_usage(&specs, true, true)
         );
         return;

@@ -8,6 +8,17 @@ pub fn run(config: args::Config) {
         std::process::exit(1)
     });
 
+    let interval: u64 = match config.option("interval") {
+        Some(v) => match v[0].parse::<u64>() {
+            Ok(v) => v,
+            Err(_) => {
+                eprintln!("Malformed interval, expected integer");
+                return;
+            }
+        },
+        None => 100,
+    };
+
     // logic
     let mut last_check = time::SystemTime::now();
     let mut changed = Vec::new();
@@ -23,7 +34,7 @@ pub fn run(config: args::Config) {
         }
         last_check = time::SystemTime::now();
         changed.clear();
-        std::thread::sleep(time::Duration::from_millis(100));
+        std::thread::sleep(time::Duration::from_millis(interval));
     }
 }
 
