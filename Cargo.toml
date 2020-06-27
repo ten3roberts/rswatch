@@ -3,6 +3,9 @@ name = "rswatch"
 version = "0.1.0"
 authors = ["Tim Roberts <ten3roberts@gmail.com>"]
 edition = "2018"
+license = "MIT"
+description = "A collection of utilities to help making command line based programs"
+readme="README.md"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
