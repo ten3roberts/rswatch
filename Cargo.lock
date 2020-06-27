@@ -2,13 +2,13 @@
 # It is not intended for manual editing.
 [[package]]
 name = "libcli"
-version = "0.3.6"
+version = "0.3.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "47eddb904504e5676fb04577b7313a7482cc0c39a3a50643dc7c8b4774fdf669"
+checksum = "b0e33df8c8f0745b8851fc54203c5e06370194f50e1153d2c10214f6b70253d9"
 
 [[package]]
 name = "rswatch"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "libcli",
 ]
