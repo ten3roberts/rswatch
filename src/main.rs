@@ -16,6 +16,13 @@ fn main() {
             false,
             args::OptionPolicy::FinalizeIgnore(),
         ),
+        args::OptionSpec::new(
+            'p',
+            "print",
+            "Print modified files and directories to stdout",
+            false,
+            args::OptionPolicy::FinalizeIgnore(),
+        ),
     ];
     let config = match args::Config::new_env(&specs) {
         Ok(config) => config,
@@ -27,7 +34,7 @@ fn main() {
 
     if let Some(_) = config.option("help") {
         println!(
-            "Myprogram\n{}",
+            "rswatch - watch files for changes and execute commands\n{}",
             args::Config::generate_usage(&specs, true, true)
         );
         return;
