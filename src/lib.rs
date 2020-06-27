@@ -87,22 +87,21 @@ fn exec_child(
                     return None;
                 }
             };
-        } else {
-            verb_print!(verbose, "Waiting for child process to exit");
-            match child.wait() {
-                Ok(status) => {
-                    if verbose {
-                        println!(
-                            "Child process exited with status {}",
-                            status.code().unwrap_or_default()
-                        )
-                    }
+        }
+        verb_print!(verbose, "Waiting for child process to exit");
+        match child.wait() {
+            Ok(status) => {
+                if verbose {
+                    println!(
+                        "Child process exited with status {}",
+                        status.code().unwrap_or_default()
+                    )
                 }
-                Err(msg) => {
-                    warn!("Failed to wait on child process {}", msg);
-                    return None;
-                }
-            };
+            }
+            Err(msg) => {
+                warn!("Failed to wait on child process {}", msg);
+                return None;
+            }
         };
     }
     if verbose {
