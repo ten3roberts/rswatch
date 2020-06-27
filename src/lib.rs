@@ -26,6 +26,7 @@ pub fn run(config: args::Config) {
     let verbose = config.option("verbose").is_some();
     let clear = config.option("clear").is_some();
     let exec_kill = config.option("kill").is_some();
+    let mut exec_start = config.option("start").is_some();
 
     // logic
     let mut last_check = time::SystemTime::now();
@@ -35,7 +36,7 @@ pub fn run(config: args::Config) {
             changed.append(&mut find_changed(last_check, Path::new(watch)));
         }
 
-        if changed.len() > 0 {
+        if changed.len() > 0 || exec_start {
             if print {
                 changed
                     .iter()
@@ -46,6 +47,8 @@ pub fn run(config: args::Config) {
             if let Some(command) = exec_command {
                 child_process = exec_child(child_process, command, exec_kill, clear, verbose);
             };
+
+            exec_start = false;
         }
 
         last_check = time::SystemTime::now();
