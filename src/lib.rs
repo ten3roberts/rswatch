@@ -1,11 +1,12 @@
 use libcli::args;
 use std::{fs, path::Path, path::PathBuf, process, time};
+#[macro_use]
+mod macros;
 
 pub fn run(config: args::Config) {
     let print = config.option("print").is_some();
     let watching = config.option("(unnamed)").unwrap_or_else(|| {
-        eprintln!("Failed to get files or directories to watch");
-        std::process::exit(1)
+        error!("Failed to get files or directories to watch");
     });
 
     let verbose = config.option("verbose").is_some();
@@ -13,10 +14,7 @@ pub fn run(config: args::Config) {
     let interval: u64 = match config.option("interval") {
         Some(v) => match v[0].parse::<u64>() {
             Ok(v) => v,
-            Err(_) => {
-                eprintln!("Malformed interval, expected integer");
-                return;
-            }
+            Err(_) => error!("Malformed interval, expected integer"),
         },
         None => 100,
     };
@@ -68,7 +66,7 @@ fn exec_child(
     // Tell process to exit
     if let Some(mut child) = child {
         if kill {
-            println!("Killing child process");
+            verb_print!(verbose, "Killing child process");
             match child.kill() {
                 Ok(()) => {}
                 Err(msg) => {
@@ -77,7 +75,7 @@ fn exec_child(
                 }
             };
         } else {
-            println!("Waiting for child process to exit");
+            verb_print!(verbose, "Waiting for child process to exit");
             match child.wait() {
                 Ok(status) => {
                     if verbose {
@@ -88,7 +86,7 @@ fn exec_child(
                     }
                 }
                 Err(msg) => {
-                    eprintln!("Failed to wait on child process {}", msg);
+                    warn!("Failed to wait on child process {}", msg);
                     return None;
                 }
             };
@@ -101,7 +99,7 @@ fn exec_child(
     {
         Ok(child) => Some(child),
         Err(msg) => {
-            eprintln!("Failed to exec process {}, {}", &command[0], msg);
+            warn!("Failed to exec process {}, {}", &command[0], msg);
             None
         }
     };
