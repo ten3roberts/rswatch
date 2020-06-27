@@ -30,6 +30,13 @@ fn main() {
             false,
             args::OptionPolicy::Exact(1),
         ),
+        args::OptionSpec::new(
+            'e',
+            "exec",
+            "Command to execute when files change\nAll following arguments are given to the specified command\n {} is to be replaced by the changed files, to run command for each changed file separately\nWatch is not blocked during execution when process is spawned but will wait until previous finished before rerunning next check\nTo kill and restart process rather than waiting, use option --kill",
+            false,
+            args::OptionPolicy::Finalize(),
+        ),
     ];
     let config = match args::Config::new_env(&specs) {
         Ok(config) => config,

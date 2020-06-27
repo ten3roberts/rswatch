@@ -1,5 +1,5 @@
 use libcli::args;
-use std::{fs, path::Path, path::PathBuf, time};
+use std::{fs, path::Path, path::PathBuf, process, time};
 
 pub fn run(config: args::Config) {
     let print = config.option("print").is_some();
@@ -7,6 +7,8 @@ pub fn run(config: args::Config) {
         eprintln!("Failed to get files or directories to watch");
         std::process::exit(1)
     });
+
+    let verbose = config.option("verbose").is_some();
 
     let interval: u64 = match config.option("interval") {
         Some(v) => match v[0].parse::<u64>() {
@@ -19,6 +21,11 @@ pub fn run(config: args::Config) {
         None => 100,
     };
 
+    let exec_command = config.option("exec");
+
+    // Represents a running process handle, if running
+    let mut child_process: Option<process::Child> = None;
+
     // logic
     let mut last_check = time::SystemTime::now();
     let mut changed = Vec::new();
@@ -27,15 +34,67 @@ pub fn run(config: args::Config) {
             changed.append(&mut find_changed(last_check, Path::new(watch)));
         }
 
-        if print {
-            changed
-                .iter()
-                .for_each(|path| println!("{}", path.to_string_lossy()));
+        if changed.len() > 0 {
+            if print {
+                changed
+                    .iter()
+                    .for_each(|path| println!("{}", path.to_string_lossy()));
+            }
+
+            // Execute
+            if let Some(command) = exec_command {
+                child_process = exec_child(child_process, command, false, verbose);
+            };
         }
+
+        println!("Child process: {:?}", child_process);
+
         last_check = time::SystemTime::now();
         changed.clear();
         std::thread::sleep(time::Duration::from_millis(interval));
     }
+}
+
+// Takes in a a child process handle and waits for it to exit
+// Returns a new child handle on success
+// Tries to wait on previous process before executing new one
+fn exec_child(
+    mut child: Option<process::Child>,
+    command: &Vec<String>,
+    kill: bool,
+    verbose: bool,
+) -> Option<process::Child> {
+    // Wait for process if already running
+    // Tell process to exit
+    if let Some(mut child) = child {
+        println!("Waiting for child process to exit");
+        match child.wait() {
+            Ok(status) => {
+                if verbose {
+                    println!(
+                        "Child process exited with status {}",
+                        status.code().unwrap_or_default()
+                    )
+                }
+            }
+            Err(msg) => {
+                eprintln!("Failed to wait on child process {}", msg);
+                return None;
+            }
+        };
+    }
+    println!("Executing process {:?}", command);
+    let child = match process::Command::new(&command[0])
+        .args(&command[1..])
+        .spawn()
+    {
+        Ok(child) => Some(child),
+        Err(msg) => {
+            eprintln!("Failed to exec process {}, {}", &command[0], msg);
+            None
+        }
+    };
+    child
 }
 
 /// Checks if any files recursively have been modified or created after specified since
