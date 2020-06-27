@@ -105,7 +105,9 @@ fn exec_child(
             };
         };
     }
-    println!("Executing process {:?}", command);
+    if verbose {
+        println!("Executing process {:?}", command);
+    }
 
     if clear {
         clear_term();
