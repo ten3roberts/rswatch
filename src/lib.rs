@@ -14,7 +14,7 @@ pub fn run(config: args::Config) {
             Ok(v) => v,
             Err(_) => error!("Malformed interval, expected integer"),
         },
-        None => 100,
+        None => 300,
     };
 
     let exec_command = config.option("exec");
