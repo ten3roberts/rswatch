@@ -1,5 +1,5 @@
 use libcli::args;
-use std::{fs, path::Path, path::PathBuf, process, time};
+use std::{fs, path::Path, process, time};
 #[macro_use]
 mod macros;
 
@@ -38,14 +38,18 @@ pub fn run(config: args::Config) {
 
         if changed.len() > 0 || exec_start {
             if print {
-                changed
-                    .iter()
-                    .for_each(|path| println!("{}", path.to_string_lossy()));
+                changed.iter().for_each(|path| println!("{}", path));
             }
 
             // Execute
             if let Some(command) = exec_command {
-                child_process = exec_child(child_process, command, exec_kill, clear, verbose);
+                child_process = exec_child(
+                    child_process,
+                    &substitute_args(&command, &changed),
+                    exec_kill,
+                    clear,
+                    verbose,
+                );
             };
 
             exec_start = false;
@@ -119,10 +123,23 @@ fn exec_child(
     child
 }
 
+// Replaces all strings equal to "{}" with the whole contents of subs
+fn substitute_args(args: &Vec<String>, subs: &Vec<String>) -> Vec<String> {
+    let mut result = Vec::with_capacity(args.len());
+    for arg in args {
+        if arg == "{}" {
+            result.append(&mut subs.clone());
+        } else {
+            result.push(arg.clone());
+        }
+    }
+    result
+}
+
 /// Checks if any files recursively have been modified or created after specified since
 /// Returns a vector for all files that changed
-fn find_changed(since: time::SystemTime, path: &Path) -> Vec<PathBuf> {
-    let mut changed: Vec<PathBuf> = Vec::new();
+fn find_changed(since: time::SystemTime, path: &Path) -> Vec<String> {
+    let mut changed: Vec<String> = Vec::new();
 
     let metadata = match fs::metadata(path) {
         Ok(v) => v,
@@ -132,7 +149,7 @@ fn find_changed(since: time::SystemTime, path: &Path) -> Vec<PathBuf> {
         }
     };
     if has_changed(since, &metadata) {
-        changed.push(path.to_path_buf());
+        changed.push(path.to_path_buf().to_string_lossy().into_owned());
     }
 
     if metadata.is_file() {
@@ -169,7 +186,7 @@ fn find_changed(since: time::SystemTime, path: &Path) -> Vec<PathBuf> {
         if metadata.is_dir() {
             changed.append(&mut find_changed(since, &entry.path()));
         } else if has_changed(since, &metadata) {
-            changed.push(entry.path().to_path_buf());
+            changed.push(entry.path().to_path_buf().to_string_lossy().into_owned());
         }
     }
     changed

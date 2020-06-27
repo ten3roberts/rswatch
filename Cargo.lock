@@ -7,7 +7,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "47eddb904504e5676fb04577b7313a7482cc0c39a3a50643dc7c8b4774fdf669"
 
 [[package]]
-name = "watch"
+name = "rswatch"
 version = "0.1.0"
 dependencies = [
  "libcli",

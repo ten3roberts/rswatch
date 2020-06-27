@@ -83,5 +83,5 @@ fn main() {
         return;
     }
 
-    watch::run(config);
+    rswatch::run(config);
 }
