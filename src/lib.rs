@@ -30,14 +30,6 @@ pub fn run(config: args::Config) {
 /// Checks if any files recursively have been modified or created after specified since
 /// Returns a vector for all files that changed
 fn find_changed(since: time::SystemTime, path: &Path) -> Vec<PathBuf> {
-    let files = match fs::read_dir(path) {
-        Ok(v) => v,
-        Err(msg) => {
-            println!("Failed to read directory '{}'", msg);
-            return Vec::new();
-        }
-    };
-
     let mut changed: Vec<PathBuf> = Vec::new();
 
     let metadata = match fs::metadata(path) {
@@ -50,6 +42,18 @@ fn find_changed(since: time::SystemTime, path: &Path) -> Vec<PathBuf> {
     if has_changed(since, &metadata) {
         changed.push(path.to_path_buf());
     }
+
+    if metadata.is_file() {
+        return changed;
+    };
+
+    let files = match fs::read_dir(path) {
+        Ok(v) => v,
+        Err(msg) => {
+            println!("Failed to read directory '{}'", msg);
+            return Vec::new();
+        }
+    };
 
     // Look through all files
     for entry in files {
