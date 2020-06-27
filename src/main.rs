@@ -51,6 +51,13 @@ fn main() {
             false,
             args::OptionPolicy::Exact(0),
         ),
+        args::OptionSpec::new(
+            'c',
+            "clear",
+            "Clears the screen before restarting child process `exec`",
+            false,
+            args::OptionPolicy::Exact(0),
+        ),
     ];
     let config = match args::Config::new_env(&specs) {
         Ok(config) => config,

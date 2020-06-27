@@ -9,8 +9,6 @@ pub fn run(config: args::Config) {
         error!("Failed to get files or directories to watch");
     });
 
-    let verbose = config.option("verbose").is_some();
-
     let interval: u64 = match config.option("interval") {
         Some(v) => match v[0].parse::<u64>() {
             Ok(v) => v,
@@ -21,10 +19,13 @@ pub fn run(config: args::Config) {
 
     let exec_command = config.option("exec");
 
-    let exec_kill = config.option("kill").is_some();
-
     // Represents a running process handle, if running
     let mut child_process: Option<process::Child> = None;
+
+    // Switch options
+    let verbose = config.option("verbose").is_some();
+    let clear = config.option("clear").is_some();
+    let exec_kill = config.option("kill").is_some();
 
     // logic
     let mut last_check = time::SystemTime::now();
@@ -43,7 +44,7 @@ pub fn run(config: args::Config) {
 
             // Execute
             if let Some(command) = exec_command {
-                child_process = exec_child(child_process, command, exec_kill, verbose);
+                child_process = exec_child(child_process, command, exec_kill, clear, verbose);
             };
         }
 
@@ -53,6 +54,10 @@ pub fn run(config: args::Config) {
     }
 }
 
+fn clear_term() {
+    print!("\x1B[2J\x1B[1;1H\n");
+}
+
 // Takes in a a child process handle and waits for it to exit
 // Returns a new child handle on success
 // Tries to wait on previous process before executing new one
@@ -60,6 +65,7 @@ fn exec_child(
     child: Option<process::Child>,
     command: &Vec<String>,
     kill: bool,
+    clear: bool,
     verbose: bool,
 ) -> Option<process::Child> {
     // Wait for process if already running
@@ -93,6 +99,10 @@ fn exec_child(
         };
     }
     println!("Executing process {:?}", command);
+
+    if clear {
+        clear_term();
+    }
     let child = match process::Command::new(&command[0])
         .args(&command[1..])
         .spawn()
