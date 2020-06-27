@@ -7,7 +7,7 @@ fn main() {
             "(unnamed)",
             "Specify which files and/or directories to watch",
             true,
-            args::OptionPolicy::AtLeast(2),
+            args::OptionPolicy::AtLeast(1),
         ),
         args::OptionSpec::new(
             'h',
@@ -32,4 +32,6 @@ fn main() {
         );
         return;
     }
+
+    watch::run(config);
 }
