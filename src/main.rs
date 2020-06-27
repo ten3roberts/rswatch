@@ -24,6 +24,13 @@ fn main() {
             args::OptionPolicy::FinalizeIgnore(),
         ),
         args::OptionSpec::new(
+            'v',
+            "verbose",
+            "Verbose output",
+            false,
+            args::OptionPolicy::FinalizeIgnore(),
+        ),
+        args::OptionSpec::new(
             'i',
             "interval",
             "Time in milliseconds between checks (default 100)",
@@ -36,6 +43,13 @@ fn main() {
             "Command to execute when files change\nAll following arguments are given to the specified command\n {} is to be replaced by the changed files, to run command for each changed file separately\nWatch is not blocked during execution when process is spawned but will wait until previous finished before rerunning next check\nTo kill and restart process rather than waiting, use option --kill",
             false,
             args::OptionPolicy::Finalize(),
+        ),
+        args::OptionSpec::new(
+            'k',
+            "kill",
+            "Specifies to kill the child process `exec` rather than wait for it",
+            false,
+            args::OptionPolicy::Exact(0),
         ),
     ];
     let config = match args::Config::new_env(&specs) {

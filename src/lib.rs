@@ -23,6 +23,8 @@ pub fn run(config: args::Config) {
 
     let exec_command = config.option("exec");
 
+    let exec_kill = config.option("kill").is_some();
+
     // Represents a running process handle, if running
     let mut child_process: Option<process::Child> = None;
 
@@ -43,11 +45,9 @@ pub fn run(config: args::Config) {
 
             // Execute
             if let Some(command) = exec_command {
-                child_process = exec_child(child_process, command, false, verbose);
+                child_process = exec_child(child_process, command, exec_kill, verbose);
             };
         }
-
-        println!("Child process: {:?}", child_process);
 
         last_check = time::SystemTime::now();
         changed.clear();
@@ -59,7 +59,7 @@ pub fn run(config: args::Config) {
 // Returns a new child handle on success
 // Tries to wait on previous process before executing new one
 fn exec_child(
-    mut child: Option<process::Child>,
+    child: Option<process::Child>,
     command: &Vec<String>,
     kill: bool,
     verbose: bool,
@@ -67,20 +67,31 @@ fn exec_child(
     // Wait for process if already running
     // Tell process to exit
     if let Some(mut child) = child {
-        println!("Waiting for child process to exit");
-        match child.wait() {
-            Ok(status) => {
-                if verbose {
-                    println!(
-                        "Child process exited with status {}",
-                        status.code().unwrap_or_default()
-                    )
+        if kill {
+            println!("Killing child process");
+            match child.kill() {
+                Ok(()) => {}
+                Err(msg) => {
+                    eprintln!("Failed to kill child process {}", msg);
+                    return None;
                 }
-            }
-            Err(msg) => {
-                eprintln!("Failed to wait on child process {}", msg);
-                return None;
-            }
+            };
+        } else {
+            println!("Waiting for child process to exit");
+            match child.wait() {
+                Ok(status) => {
+                    if verbose {
+                        println!(
+                            "Child process exited with status {}",
+                            status.code().unwrap_or_default()
+                        )
+                    }
+                }
+                Err(msg) => {
+                    eprintln!("Failed to wait on child process {}", msg);
+                    return None;
+                }
+            };
         };
     }
     println!("Executing process {:?}", command);
