@@ -1,8 +1,8 @@
 #[macro_use]
 macro_rules! verb_print {
-    ($verbose:ident, $($tts:tt)*) => {
+    ($verbose:ident, $($arg:tt)*) => {
         if $verbose {
-        println!("{}", ($($tts)*));
+        println!($($arg)*);
         }
     }
 }

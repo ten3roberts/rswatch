@@ -18,6 +18,12 @@ This is useful if you're making an interactive application that runs in a loop o
 
 Setting up this script in a terminal can be used to automatically rebuild and run tests on save
 
+
+# Exiting
+Using Ctrl-C (SIGINT) in terminal will terminate child process if running, if child process isn't running, it will prompt to confirm exit, simply enter y or `enter` to exit
+
+This is to prevent accidental exit from rswatch when terminating child process
+
 ## Usage
 ### Accessible with `rswatch --help`
 
